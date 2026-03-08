@@ -1,6 +1,7 @@
 import re
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound
+from backend.cleaner import clean_transcript
 
 
 def extract_video_id(url: str) -> str:
@@ -18,11 +19,12 @@ def extract_video_id(url: str) -> str:
 
 
 def get_transcript(video_id: str) -> str:
-    """Fetch and return the full transcript as a single string."""
+    """Fetch, clean and return the full transcript as a single string."""
     try:
         ytt = YouTubeTranscriptApi()
         fetched = ytt.fetch(video_id)
-        return " ".join([entry.text for entry in fetched])
+        raw = " ".join([entry.text for entry in fetched])
+        return clean_transcript(raw)  # run cleaner before returning
     except TranscriptsDisabled:
         raise RuntimeError("Transcripts are disabled for this video.")
     except NoTranscriptFound:
